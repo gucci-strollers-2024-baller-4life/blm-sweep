@@ -10,6 +10,10 @@ on:
         description: 'end pair index'
         required: false
         default: '57258302'
+      variant:
+        description: 'base|space|pict|space_pict'
+        required: false
+        default: 'base'
       chunks:
         description: 'number of parallel chunks'
         required: false
@@ -49,4 +53,5 @@ jobs:
         run: python3 -u sweep.py
         env:
           LO: ${{ steps.rng.outputs.a }}
+          VARIANT: ${{ inputs.variant }}
           HI: ${{ steps.rng.outputs.b }}

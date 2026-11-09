@@ -17,6 +17,15 @@ Aidx = [I[w] for w in A]
 Fidx = [I[w] if w else -1 for w in F]
 apl, sec = I["apple"], I["second"]
 
+VAR = os.environ.get("VARIANT", "base")
+PICT = ["subject","camera","tower","mask","police","liberty","eye","pyramid","vote","moon","rifle","gold","glove","apple","second"]
+if "space" in VAR:
+    F[10] = "space"
+    Fidx[10] = I["space"]
+if "pict" in VAR:
+    LASTI = [I[w] for w in PICT]
+else:
+    LASTI = Aidx
 LO = int(os.environ.get("LO", "0"))
 HI = int(os.environ.get("HI", "57258302"))
 
@@ -63,7 +72,7 @@ for combo in itertools.product(range(len(A)), repeat=5):
         if i <= LO:
             continue
         if i > HI:
-            print(f"DONE range {LO+1}..{HI} derivations={n} time={time.time()-t0:.0f}s", flush=True)
+            print(f"DONE variant={VAR} range {LO+1}..{HI} derivations={n} time={time.time()-t0:.0f}s", flush=True)
             sys.exit(0)
         base = list(Fidx)
         base[5] = Aidx[w0]; base[7] = Aidx[w1]; base[13] = Aidx[w2]
@@ -73,7 +82,7 @@ for combo in itertools.product(range(len(A)), repeat=5):
             pfx = (pfx << 11) | x
         pstr = " ".join(wordstr[x] for x in base) + " "
         p220 = pfx << 11
-        for la in Aidx:
+        for la in LASTI:
             b = p220 | la
             if (sha256((b >> 7).to_bytes(28, "big")).digest()[0] >> 1) != (b & 0x7f):
                 continue
