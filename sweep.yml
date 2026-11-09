@@ -1,0 +1,52 @@
+name: blm-sweep
+on:
+  workflow_dispatch:
+    inputs:
+      lo:
+        description: 'start pair index'
+        required: false
+        default: '33620000'
+      hi:
+        description: 'end pair index'
+        required: false
+        default: '57258302'
+      chunks:
+        description: 'number of parallel chunks'
+        required: false
+        default: '16'
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: install
+        run: pip install --quiet coincurve
+      - name: compute range
+        id: rng
+        run: |
+          python3 - <<'EOF'
+          import os, math
+          lo = int("${{ inputs.lo }}"); hi = int("${{ inputs.hi }}")
+          n = 16
+          span = hi - lo
+          per = math.ceil(span / n)
+          c = ${{ matrix.chunk }}
+          a = lo + c * per
+          b = min(lo + (c + 1) * per, hi)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"a={a}\nb={b}\n")
+          EOF
+      - name: sweep chunk ${{ matrix.chunk }}
+        run: python3 -u sweep.py
+        env:
+          LO: ${{ steps.rng.outputs.a }}
+          HI: ${{ steps.rng.outputs.b }}
