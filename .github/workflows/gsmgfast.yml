@@ -1,0 +1,24 @@
+name: gsmgfast
+on:
+  workflow_dispatch:
+    inputs:
+      nshard: {description: 'shards', required: false, default: '20'}
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install --quiet coincurve base58
+      - run: curl -sL --max-time 600 https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt -o rockyou.txt
+      - run: python3 -u gsmgfast.py rockyou.txt
+        env:
+          SHARD: '${{ matrix.shard }}'
+          NSHARD: '${{ inputs.nshard }}'
