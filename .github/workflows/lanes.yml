@@ -1,0 +1,56 @@
+name: lanes
+on:
+  workflow_dispatch:
+    inputs:
+      extra:
+        description: extra BLM pool words
+        required: false
+        default: "need,coin,matter,later,spend,this"
+jobs:
+  blm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install --quiet coincurve
+      - name: range
+        id: rng
+        run: python3 poolrange.py
+        env:
+          CHUNK: ${{ matrix.chunk }}
+          CHUNKS: "10"
+          EXTRA: ${{ inputs.extra }}
+      - name: blm shard
+        run: python3 -u pool.py
+        env:
+          EXTRA: ${{ inputs.extra }}
+          LO: ${{ steps.rng.outputs.lo }}
+          HI: ${{ steps.rng.outputs.hi }}
+          VARIANT: base
+  gsmg:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install --quiet coincurve base58
+      - run: curl -sL --max-time 600 https://github.com/brannondorsey/naive-hashcat/releases/data/rockyou.txt -o rockyou.txt || curl -sL --max-time 600 https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt -o rockyou.txt
+      - run: python3 -u gsmgfast.py rockyou.txt
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARD: "10"
