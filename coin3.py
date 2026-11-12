@@ -12,7 +12,8 @@ SIX = ["basic", "token", "dash", "atom", "link", "song"]
 SEVEN = ["lake", "song", "atom", "link", "basic", "token", "dash"]
 FREE_SLOTS = [1, 2, 3, 5, 6, 7, 8, 9, 10]
 PERMS = list(itertools.permutations(FREE_SLOTS))
-PATHS = [f"m/44'/60'/{a}'/0/{b}" for a in range(3) for b in range(5)]
+ALL_PATHS = [f"m/44'/60'/{a}'/0/{b}" for a in range(3) for b in range(5)]
+PATHS = ALL_PATHS[:int(os.environ.get("NPATHS", "1"))]
 
 
 def keccak256(b):
